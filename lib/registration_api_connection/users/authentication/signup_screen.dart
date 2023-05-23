@@ -1,7 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import '../model/user.dart';
 import 'login_screen.dart';
+import 'package:ecommrece_app/registration_api_connection/api_connection/api_connection.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -18,6 +23,74 @@ class _SignUpScreenState extends State<SignUpScreen> {
   var passwordController = TextEditingController();
   var isObsecure = true.obs;
 
+  validateUserEmail()async
+  {
+    try{
+
+     var response =  await http.post(
+        Uri.parse(API.validateEmail),
+        body: {
+          "user_email": emailController.text.trim(),
+        },
+      );
+
+     if(response.statusCode == 200) // connection of flutter app with api to server is success
+
+     {
+       var responseBodyValidation = jsonDecode(response.body);
+
+       if(responseBodyValidation["emailexist"]== true){ // emailexist is key at the validate_email.php file
+         Fluttertoast.showToast(msg:"Email is already in someone else use, add other email");
+
+       }else{
+
+         //register and save data in database
+         registerAndsaveUserRecord() ;
+       }
+
+     }
+
+    }catch(e){
+      Fluttertoast.showToast(msg:e.toString());
+      print(e.toString());
+    }
+
+
+  }
+
+
+  registerAndsaveUserRecord()async{
+    User userModel = User(
+      1,
+      nameController.text.trim(),
+      emailController.text.trim(),
+      passwordController.text.trim()
+
+    );
+
+    try{
+      var response = await http.post(
+        Uri.parse(API.signUp),
+        body: userModel.toJson(),
+      );
+
+      if(response.statusCode == 200){
+       var responseBodyregister= jsonDecode(response.body);
+       if(responseBodyregister["success"]== true){  // success is key at the signup.php file
+         Fluttertoast.showToast(msg:"Registration completed successfully");
+
+       }else{
+         Fluttertoast.showToast(msg:"Registration Error, Try again");
+
+       }
+      }
+    }catch(e){
+      Fluttertoast.showToast(msg:e.toString());
+print(e.toString());
+    }
+
+
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -225,6 +298,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     borderRadius: BorderRadius.circular(30),
                                     child: InkWell(
                                       onTap: (){
+                                        if(formKey.currentState!.validate()){
+                                          //validate the email
+                                          //must be unique
+                                          validateUserEmail();
+                                        }
+
+
 
                                       },borderRadius: BorderRadius.circular(30),
                                       child: const Padding(
