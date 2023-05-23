@@ -76,10 +76,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       if(response.statusCode == 200){
        var responseBodyregister= jsonDecode(response.body);
-       if(responseBodyregister["success"]== true){  // success is key at the signup.php file
-         Fluttertoast.showToast(msg:"Registration completed successfully");
+       if(responseBodyregister["success"]== true) {
+          // success is key at the signup.php file
+          Fluttertoast.showToast(msg: "Registration completed successfully");
 
-       }else{
+          setState(() {
+            nameController.clear();
+            emailController.clear();
+            passwordController.clear();
+          });
+        } else{
          Fluttertoast.showToast(msg:"Registration Error, Try again");
 
        }
