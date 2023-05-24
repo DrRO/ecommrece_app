@@ -1,7 +1,7 @@
 import 'dart:convert';
+import 'package:ecommrece_app/registration_api_connection/users/fragments/dashboard_fragments.dart';
 
 import 'package:ecommrece_app/registration_api_connection/users/authentication/signup_screen.dart';
-import 'package:ecommrece_app/registration_api_connection/users/fragments/dashboard_fragments.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -273,10 +273,8 @@ class _LoginScreenState extends State<LoginScreen> {
           await SaveUserInfo.saveUserData(userInfo);
 
           Future.delayed(Duration(milliseconds: 2000), () {
-            Get.to(DashboardOfFragment());
-          }
-
-          );
+            Get.to(DashboardOfFragments());
+          });
         } else {
           Fluttertoast.showToast(
               msg: "Write the correct Email Or Password, Please");
