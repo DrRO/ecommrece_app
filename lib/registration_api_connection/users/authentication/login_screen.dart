@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:ecommrece_app/admin/admin_login.dart';
 import 'package:ecommrece_app/registration_api_connection/users/fragments/dashboard_fragments.dart';
 
 import 'package:ecommrece_app/registration_api_connection/users/authentication/signup_screen.dart';
@@ -232,9 +233,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 const Text('Are you an Admin?'
                                 ),
-                                TextButton(onPressed: (){
-
-                                },child: const Text('click Here ',style: TextStyle(color:Colors.purpleAccent,
+                                TextButton(onPressed: () {
+                                    Get.to(AdminLoginScreen());
+                                  },child: const Text('click Here ',style: TextStyle(color:Colors.purpleAccent,
                                     fontSize: 18),
                                 ),)
                               ],

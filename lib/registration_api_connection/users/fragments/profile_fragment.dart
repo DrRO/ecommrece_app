@@ -45,7 +45,7 @@ class ProfileFragmentScreen extends StatelessWidget {
       children: [
         Center(
           child: Image.asset(
-            "images/man.png",
+            "assets/images/man.png",
             width: 240,
           ),
         ),
