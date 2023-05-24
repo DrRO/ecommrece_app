@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ecommrece_app/registration_api_connection/users/authentication/signup_screen.dart';
+import 'package:ecommrece_app/registration_api_connection/users/fragments/dashboard_fragments.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -8,6 +9,7 @@ import 'package:http/http.dart' as http;
 
 import '../../api_connection/api_connection.dart';
 import '../model/user.dart';
+import '../user_preferences/user_pref.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -181,7 +183,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     borderRadius: BorderRadius.circular(30),
                                     child: InkWell(
                                       onTap: () {
-                                        loginUser();
+                                        if (formKey.currentState!.validate()) {
+                                          loginUser();
+                                        }
                                       },borderRadius: BorderRadius.circular(30),
                                       child: const Padding(
                                         padding: EdgeInsets.symmetric(
@@ -251,22 +255,36 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   loginUser() async {
-    var response = await http.post(Uri.parse(API.login), body: {
-      "user_email": emailController.text.trim(),
-      "user_password": passwordController.text.trim(),
-    });
-    if (response.statusCode == 200) {
-      var responseBodyLogin = jsonDecode(response.body);
+    try {
+      var response = await http.post(Uri.parse(API.login), body: {
+        "user_email": emailController.text.trim(),
+        "user_password": passwordController.text.trim(),
+      });
+      if (response.statusCode == 200) {
+        var responseBodyLogin = jsonDecode(response.body);
 
-      if (responseBodyLogin["success"] == true) {
-        // success is key at the signup.php file
-        Fluttertoast.showToast(msg: "login completed successfully");
+        if (responseBodyLogin["success"] == true) {
+          // success is key at the signup.php file
+          Fluttertoast.showToast(msg: "login completed successfully");
 
-        User userInfo = User.fromJson(responseBodyLogin["userData"]);
-      } else {
-        Fluttertoast.showToast(
-            msg: "Write the correct Email Or Password, Please");
+          User userInfo = User.fromJson(responseBodyLogin["userData"]);
+
+          // Remember User info by save data in SharedPrefrences
+          await SaveUserInfo.saveUserData(userInfo);
+
+          Future.delayed(Duration(milliseconds: 2000), () {
+            Get.to(DashboardOfFragment());
+          }
+
+          );
+        } else {
+          Fluttertoast.showToast(
+              msg: "Write the correct Email Or Password, Please");
+        }
       }
+    }
+    catch (e) {
+      print("Error " + e.toString());
     }
   }
 }

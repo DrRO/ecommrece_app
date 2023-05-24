@@ -24,7 +24,7 @@ if ($resultofQuery->num_rows > 0){
     //fetch_assoc() is a method fetch a result row
     while($rowExist = $resultofQuery->fetch_assoc())
     {
-        $userRecord = $rowExist;
+        $userRecord[] = $rowExist;
     }
 
     echo json_encode(array("success"=>true, 
