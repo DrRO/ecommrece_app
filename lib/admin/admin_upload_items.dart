@@ -1,19 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:ecommrece_app/admin/admin_login.dart';
+import 'package:ecommrece_app/registration_api_connection/api_connection/api_connection.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
-
 class AdminUploadItemsScreen extends StatefulWidget {
-
-
   @override
   State<AdminUploadItemsScreen> createState() => _AdminUploadItemsScreenState();
 }
-
 
 class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
   final ImagePicker _picker = ImagePicker();
@@ -40,8 +37,7 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
     setState(() => pickedImageXFile);
   }
 
-  pickImageFromPhoneGallery() async
-  {
+  pickImageFromPhoneGallery() async {
     pickedImageXFile = await _picker.pickImage(source: ImageSource.gallery);
 
     Get.back();
@@ -98,8 +94,7 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
               ),
             ],
           );
-        }
-    );
+        });
   }
 
   //defaultScreen methods ends here
@@ -178,16 +173,11 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
   uploadItemImage() async
   {
     var requestImgurApi = http.MultipartRequest(
-        "POST",
-        Uri.parse("https://api.imgur.com/3/image")
-    );
+        "POST", Uri.parse("https://api.imgur.com/3/image"));
 
-    String imageName = DateTime
-        .now()
-        .millisecondsSinceEpoch
-        .toString();
+    String imageName = DateTime.now().millisecondsSinceEpoch.toString();
     requestImgurApi.fields['title'] = imageName;
-    requestImgurApi.headers['Authorization'] = "Client-ID " + "430647f62fef487";
+    requestImgurApi.headers['Authorization'] = "Client-ID " + "6ca0d6456311e4d";
 
     var imageFile = await http.MultipartFile.fromPath(
       'image',
@@ -204,6 +194,58 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
     Map<String, dynamic> jsonRes = json.decode(resultFromImgurApi);
     imageLink = (jsonRes["data"]["link"]).toString();
     String deleteHash = (jsonRes["data"]["deletehash"]).toString();
+
+    saveItemInfoToDatabase();
+  }
+
+  saveItemInfoToDatabase() async {
+    List<String> tagsList = tagsController.text.split(',');
+    List<String> sizesList = sizesController.text.split(',');
+    List<String> colorsList = colorsController.text.split(',');
+
+    try {
+      var response = await http.post(
+        Uri.parse(API.saveItem),
+        body: {
+          'item_id': '1',
+          'name': nameController.text.trim().toString(),
+          'rating': ratingController.text.trim().toString(),
+          'tags': tagsList.toString(),
+          'price': priceController.text.trim().toString(),
+          'sizes': sizesList.toString(),
+          'colors': colorsList.toString(),
+          'description': descriptionController.text.trim().toString(),
+          'image': imageLink.toString(),
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var resBodyOfUploadItem = jsonDecode(response.body);
+
+        if (resBodyOfUploadItem['success'] == true) {
+          Fluttertoast.showToast(msg: "New item uploaded successfully");
+
+          setState(() {
+            pickedImageXFile = null;
+            nameController.clear();
+            ratingController.clear();
+            tagsController.clear();
+            priceController.clear();
+            sizesController.clear();
+            colorsController.clear();
+            descriptionController.clear();
+          });
+
+          Get.to(AdminUploadItemsScreen());
+        } else {
+          Fluttertoast.showToast(msg: "Item not uploaded. Error, Try Again.");
+        }
+      } else {
+        Fluttertoast.showToast(msg: "Status is not 200");
+      }
+    } catch (errorMsg) {
+      print("Error:: " + errorMsg.toString());
+    }
   }
 
   //uploadItemFormScreen methods ends here
@@ -229,7 +271,18 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
         centerTitle: true,
         leading: IconButton(
           onPressed: () {
-            Get.to(AdminLoginScreen());
+            setState(() {
+              pickedImageXFile = null;
+              nameController.clear();
+              ratingController.clear();
+              tagsController.clear();
+              priceController.clear();
+              sizesController.clear();
+              colorsController.clear();
+              descriptionController.clear();
+            });
+
+            Get.to(AdminUploadItemsScreen());
           },
           icon: const Icon(
             Icons.clear,
@@ -238,7 +291,9 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              Get.to(AdminLoginScreen());
+              Fluttertoast.showToast(msg: "Uploading now...");
+
+              uploadItemImage();
             },
             child: const Text(
               "Done",
@@ -254,14 +309,8 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
 
           //image
           Container(
-            height: MediaQuery
-                .of(context)
-                .size
-                .height * 0.4,
-            width: MediaQuery
-                .of(context)
-                .size
-                .width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.4,
+            width: MediaQuery.of(context).size.width * 0.8,
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: FileImage(
@@ -304,9 +353,7 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
                           TextFormField(
                             controller: nameController,
                             validator: (val) =>
-                            val == ""
-                                ? "Please write item name"
-                                : null,
+                                val == "" ? "Please write item name" : null,
                             decoration: InputDecoration(
                               prefixIcon: const Icon(
                                 Icons.title,
@@ -352,9 +399,7 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
                           TextFormField(
                             controller: ratingController,
                             validator: (val) =>
-                            val == ""
-                                ? "Please give item rating"
-                                : null,
+                                val == "" ? "Please give item rating" : null,
                             decoration: InputDecoration(
                               prefixIcon: const Icon(
                                 Icons.rate_review,
@@ -400,9 +445,7 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
                           TextFormField(
                             controller: tagsController,
                             validator: (val) =>
-                            val == ""
-                                ? "Please write item tags"
-                                : null,
+                                val == "" ? "Please write item tags" : null,
                             decoration: InputDecoration(
                               prefixIcon: const Icon(
                                 Icons.tag,
@@ -448,9 +491,7 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
                           TextFormField(
                             controller: priceController,
                             validator: (val) =>
-                            val == ""
-                                ? "Please write item price"
-                                : null,
+                                val == "" ? "Please write item price" : null,
                             decoration: InputDecoration(
                               prefixIcon: const Icon(
                                 Icons.price_change_outlined,
@@ -496,9 +537,7 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
                           TextFormField(
                             controller: sizesController,
                             validator: (val) =>
-                            val == ""
-                                ? "Please write item sizes"
-                                : null,
+                                val == "" ? "Please write item sizes" : null,
                             decoration: InputDecoration(
                               prefixIcon: const Icon(
                                 Icons.picture_in_picture,
@@ -544,9 +583,7 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
                           TextFormField(
                             controller: colorsController,
                             validator: (val) =>
-                            val == ""
-                                ? "Please write item colors"
-                                : null,
+                                val == "" ? "Please write item colors" : null,
                             decoration: InputDecoration(
                               prefixIcon: const Icon(
                                 Icons.color_lens,
@@ -591,8 +628,7 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
                           //item description
                           TextFormField(
                             controller: descriptionController,
-                            validator: (val) =>
-                            val == ""
+                            validator: (val) => val == ""
                                 ? "Please write item description"
                                 : null,
                             decoration: InputDecoration(
@@ -643,6 +679,9 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
                             child: InkWell(
                               onTap: () {
                                 if (formKey.currentState!.validate()) {
+                                  Fluttertoast.showToast(
+                                      msg: "Uploading now...");
+
                                   uploadItemImage();
                                 }
                               },
@@ -677,7 +716,6 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {

@@ -17,4 +17,8 @@ class API
   //login admin
   static const hostConnectAdmin = "$hostConnect/admin";
   static const adminLogin = "$hostConnectAdmin/login.php";
+
+  //Save_item_to database
+  static const hostConnectItem = "$hostConnect/items";
+  static const saveItem = "$hostConnectItem/save.php";
 }
