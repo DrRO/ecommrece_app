@@ -41,6 +41,7 @@ dependencies:
   shared_preferences: ^2.0.17
   font_awesome_flutter: ^10.3.0
   image_picker: ^0.8.7
+  flutter_rating_bar: ^4.0.1
 
 
 dev_dependencies:
@@ -72,6 +73,7 @@ flutter:
     - assets/images/man.png
     - assets/images/woman.png
     - assets/images/admin.png
+    - assets/images/placeholder.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

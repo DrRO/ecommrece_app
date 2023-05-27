@@ -1,10 +1,11 @@
 import 'package:ecommrece_app/registration_api_connection/users/fragments/profile_fragment.dart';
 import 'package:ecommrece_app/registration_api_connection/users/user_preferences/current_user.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+
 import 'favourites_fragment.dart';
-import 'home_fragmant.dart';
+import 'home_fragment.dart';
 import 'order_fragment.dart';
 
 class DashboardOfFragments extends StatelessWidget {

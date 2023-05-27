@@ -21,4 +21,8 @@ class API
   //Save_item_to database
   static const hostConnectItem = "$hostConnect/items";
   static const saveItem = "$hostConnectItem/save.php";
+
+  //Products
+  static const hostProducts = "$hostConnect/products";
+  static const trendingProducts = "$hostProducts/trending.php";
 }
