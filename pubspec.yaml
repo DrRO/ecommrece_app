@@ -71,7 +71,7 @@ flutter:
     - assets/images/login.png
     - assets/images/SignUp.png
     - assets/images/man.png
-    - assets/images/woman.png
+    - assets/images/womanicon.png
     - assets/images/admin.png
     - assets/images/placeholder.png
   # An image asset can refer to one or more resolution-specific "variants", see
