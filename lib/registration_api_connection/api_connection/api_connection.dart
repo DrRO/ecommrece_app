@@ -26,4 +26,12 @@ class API
   static const hostProducts = "$hostConnect/products";
   static const trendingProducts = "$hostProducts/trending.php";
   static const allProducts = "$hostProducts/allproducts.php";
+
+  //cart
+  static const hostCart = "$hostConnect/cart";
+
+  static const addToCart = "$hostCart/add.php";
+  static const getCartList = "$hostCart/read.php";
+  static const deleteSelectedItemsFromCartList = "$hostCart/delete.php";
+  static const updateItemInCartList = "$hostCart/update.php";
 }
