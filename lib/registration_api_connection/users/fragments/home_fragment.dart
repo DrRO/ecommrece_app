@@ -10,34 +10,52 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 class HomeFragmentScreen extends StatelessWidget {
   TextEditingController searchController = TextEditingController();
 
-
-  Future<List<Products>> getTrendingProdItems() async
-  {
+  Future<List<Products>> getTrendingProdItems() async {
     List<Products> trendingProdItemsList = [];
 
     try {
-      var res = await http.post(
-          Uri.parse(API.trendingProducts)
-      );
+      var res = await http.post(Uri.parse(API.trendingProducts));
 
       if (res.statusCode == 200) {
         var responseBodyOfTrending = jsonDecode(res.body);
         if (responseBodyOfTrending["success"] == true) {
-          (responseBodyOfTrending["ProductItemsData"] as List).forEach((
-              eachRecord) {
+          (responseBodyOfTrending["ProductItemsData"] as List)
+              .forEach((eachRecord) {
             trendingProdItemsList.add(Products.fromJson(eachRecord));
           });
         }
-      }
-      else {
+      } else {
         Fluttertoast.showToast(msg: "Error, status code is not 200");
       }
-    }
-    catch (errorMsg) {
+    } catch (errorMsg) {
       print("Error:: " + errorMsg.toString());
     }
 
     return trendingProdItemsList;
+  }
+
+  Future<List<Products>> getAllProdItems() async {
+    List<Products> allProdItemsList = [];
+
+    try {
+      var res = await http.post(Uri.parse(API.allProducts));
+
+      if (res.statusCode == 200) {
+        var responseBodyOfAllProdes = jsonDecode(res.body);
+        if (responseBodyOfAllProdes["success"] == true) {
+          (responseBodyOfAllProdes["ProductItemsData"] as List)
+              .forEach((eachRecord) {
+            allProdItemsList.add(Products.fromJson(eachRecord));
+          });
+        }
+      } else {
+        Fluttertoast.showToast(msg: "Error, status code is not 200");
+      }
+    } catch (errorMsg) {
+      print("Error:: " + errorMsg.toString());
+    }
+
+    return allProdItemsList;
   }
 
   @override
@@ -46,8 +64,9 @@ class HomeFragmentScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
-          const SizedBox(height: 16,),
+          const SizedBox(
+            height: 16,
+          ),
 
           //search bar widget
           showSearchBarWidget(),
@@ -82,7 +101,7 @@ class HomeFragmentScreen extends StatelessWidget {
               ),
             ),
           ),
-
+          allItemWidget(context),
         ],
       ),
     );
@@ -96,9 +115,7 @@ class HomeFragmentScreen extends StatelessWidget {
         controller: searchController,
         decoration: InputDecoration(
           prefixIcon: IconButton(
-            onPressed: () {
-
-            },
+            onPressed: () {},
             icon: const Icon(
               Icons.search,
               color: Colors.purpleAccent,
@@ -110,9 +127,7 @@ class HomeFragmentScreen extends StatelessWidget {
             fontSize: 12,
           ),
           suffixIcon: IconButton(
-            onPressed: () {
-
-            },
+            onPressed: () {},
             icon: const Icon(
               Icons.shopping_cart,
               color: Colors.purpleAccent,
@@ -141,178 +156,318 @@ class HomeFragmentScreen extends StatelessWidget {
 
   Widget trendingMostPopularProdItemWidget(context) {
     return FutureBuilder(
-        future: getTrendingProdItems(),
-    builder: (context, AsyncSnapshot<List<Products>> dataSnapShot)
-    {
-    if(dataSnapShot.connectionState == ConnectionState.waiting)
-    {
-    return const Center(
-    child: CircularProgressIndicator(),
+      future: getTrendingProdItems(),
+      builder: (context, AsyncSnapshot<List<Products>> dataSnapShot) {
+        if (dataSnapShot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        if (dataSnapShot.data == null) {
+          return const Center(
+            child: Text(
+              "No Trending item found",
+            ),
+          );
+        }
+        if (dataSnapShot.data!.length > 0) {
+          return SizedBox(
+            height: 260,
+            child: ListView.builder(
+              itemCount: dataSnapShot.data!.length,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) {
+                Products eachProdItemData = dataSnapShot.data![index];
+                return GestureDetector(
+                  onTap: () {},
+                  child: Container(
+                    width: 200,
+                    margin: EdgeInsets.fromLTRB(
+                      index == 0 ? 16 : 8,
+                      10,
+                      index == dataSnapShot.data!.length - 1 ? 16 : 8,
+                      10,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.black,
+                      boxShadow: const [
+                        BoxShadow(
+                          offset: Offset(0, 3),
+                          blurRadius: 6,
+                          color: Colors.grey,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        //item image
+                        ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(22),
+                            topRight: Radius.circular(22),
+                          ),
+                          child: FadeInImage(
+                            height: 150,
+                            width: 200,
+                            fit: BoxFit.cover,
+                            placeholder: const AssetImage(
+                                "assets/images/placeholder.png"),
+                            image: NetworkImage(
+                              eachProdItemData.image!,
+                            ),
+                            imageErrorBuilder:
+                                (context, error, stackTraceError) {
+                              return const Center(
+                                child: Icon(
+                                  Icons.broken_image_outlined,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+                        //item name & price
+                        //rating stars & rating numbers
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              //item name & price
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      eachProdItemData.name!,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    eachProdItemData.price.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.purpleAccent,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(
+                                height: 8,
+                              ),
+
+                              //rating stars & rating numbers
+                              Row(
+                                children: [
+                                  RatingBar.builder(
+                                    initialRating: eachProdItemData.rating!,
+                                    minRating: 1,
+                                    direction: Axis.horizontal,
+                                    allowHalfRating: true,
+                                    itemCount: 5,
+                                    itemBuilder: (context, c) => const Icon(
+                                      Icons.star,
+                                      color: Colors.amber,
+                                    ),
+                                    onRatingUpdate: (updateRating) {},
+                                    ignoreGestures: true,
+                                    unratedColor: Colors.grey,
+                                    itemSize: 20,
+                                  ),
+                                  const SizedBox(
+                                    width: 8,
+                                  ),
+                                  Text(
+                                    "(" +
+                                        eachProdItemData.rating.toString() +
+                                        ")",
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        } else {
+          return const Center(
+            child: Text("Empty, No Data."),
+          );
+        }
+      },
     );
-    }
-    if(dataSnapShot.data == null)
-    {
-    return const Center(
-    child: Text(
-    "No Trending item found",
-    ),
-    );
-    }
-    if(dataSnapShot.data!.length > 0)
-    {
-    return SizedBox(
-    height: 260,
-    child: ListView.builder(
-    itemCount: dataSnapShot.data!.length,
-    scrollDirection: Axis.horizontal,
-    itemBuilder: (context, index)
-    {
-    Products eachProdItemData = dataSnapShot.data![index];
-    return GestureDetector(
-    onTap: ()
-
-    },
-    child: Container(
-    width: 200,
-    margin: EdgeInsets.fromLTRB(
-    index == 0 ? 16 : 8,
-    10,
-    index == dataSnapShot.data!.length - 1 ? 16 : 8,
-    10,
-    ),
-    decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(20),
-    color: Colors.black,
-    boxShadow:
-    const [
-    BoxShadow(
-    offset: Offset(0,3),
-    blurRadius: 6,
-    color: Colors.grey,
-    ),
-    ],
-    ),
-    child: Column(
-    children: [
-
-    //item image
-    ClipRRect(
-    borderRadius: const BorderRadius.only(
-    topLeft: Radius.circular(22),
-    topRight: Radius.circular(22),
-    ),
-    child: FadeInImage(
-    height: 150,
-    width: 200,
-    fit: BoxFit.cover,
-    placeholder: const AssetImage("assets/images/placeholder.png"),
-    image: NetworkImage(
-    eachProdItemData.image!,
-    ),
-    imageErrorBuilder: (context, error, stackTraceError)
-    {
-    return const Center(
-    child: Icon(
-    Icons.broken_image_outlined,
-    ),
-    );
-    },
-    ),
-    ),
-
-    //item name & price
-    //rating stars & rating numbers
-    Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-
-    //item name & price
-    Row(
-    children: [
-    Expanded(
-    child: Text(
-    eachProdItemData.name!,
-    maxLines: 2,
-    overflow: TextOverflow.ellipsis,
-    style: const TextStyle(
-    color: Colors.grey,
-    fontSize: 16,
-    fontWeight: FontWeight.bold,
-    ),
-    ),
-    ),
-    const SizedBox(
-    width: 10,
-    ),
-    Text(
-    eachProdItemData.price.toString(),
-    style: const TextStyle(
-    color: Colors.purpleAccent,
-    fontSize: 18,
-    fontWeight: FontWeight.bold,
-    ),
-    ),
-    ],
-    ),
-
-    const SizedBox(height: 8,),
-
-    //rating stars & rating numbers
-    Row(
-    children: [
-
-    RatingBar.builder(
-    initialRating: eachProdItemData.rating!,
-    minRating: 1,
-    direction: Axis.horizontal,
-    allowHalfRating: true,
-    itemCount: 5,
-    itemBuilder: (context, c)=> const Icon(
-    Icons.star,
-    color: Colors.amber,
-    ),
-    onRatingUpdate: (updateRating){},
-    ignoreGestures: true,
-    unratedColor: Colors.grey,
-    itemSize: 20,
-    ),
-
-    const SizedBox(width: 8,),
-
-    Text(
-    "(" + eachProdItemData.rating.toString() + ")",
-    style: const TextStyle(
-    color: Colors.grey,
-    ),
-    ),
-
-    ],
-    ),
-
-    ],
-    ),
-    ),
-
-    ],
-    ),
-    ),
-    );
-    },
-    ),
-    );
-    }
-    else
-    {
-    return const Center(
-    child: Text("Empty, No Data."),
-    );
-    }
   }
 
-  ,
+  allItemWidget(context) {
+    return FutureBuilder(
+        future: getAllProdItems(),
+        builder: (context, AsyncSnapshot<List<Products>> dataSnapShot) {
+          if (dataSnapShot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if (dataSnapShot.data == null) {
+            return const Center(
+              child: Text(
+                "No Trending item found",
+              ),
+            );
+          }
+          if (dataSnapShot.data!.length > 0) {
+            return ListView.builder(
+              itemCount: dataSnapShot.data!.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              scrollDirection: Axis.vertical,
+              itemBuilder: (context, index) {
+                Products eachProdItemRecord = dataSnapShot.data![index];
 
-  );
+                return GestureDetector(
+                  onTap: () {},
+                  child: Container(
+                    margin: EdgeInsets.fromLTRB(
+                      16,
+                      index == 0 ? 16 : 8,
+                      16,
+                      index == dataSnapShot.data!.length - 1 ? 16 : 8,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.black,
+                      boxShadow: const [
+                        BoxShadow(
+                          offset: Offset(0, 0),
+                          blurRadius: 6,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        //name + price
+                        //tags
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 15),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                //name and price
+                                Row(
+                                  children: [
+                                    //name
+                                    Expanded(
+                                      child: Text(
+                                        eachProdItemRecord.name!,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+
+                                    //price
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 12, right: 12),
+                                      child: Text(
+                                        "\$ " +
+                                            eachProdItemRecord.price.toString(),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.purpleAccent,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(
+                                  height: 16,
+                                ),
+
+                                //tags
+                                Text(
+                                  "Tags: \n" +
+                                      eachProdItemRecord.tags
+                                          .toString()
+                                          .replaceAll("[", "")
+                                          .replaceAll("]", ""),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        //image
+                        ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topRight: Radius.circular(20),
+                            bottomRight: Radius.circular(20),
+                          ),
+                          child: FadeInImage(
+                            height: 130,
+                            width: 130,
+                            fit: BoxFit.cover,
+                            placeholder: const AssetImage(
+                                "assets/images/placeholder.png"),
+                            image: NetworkImage(
+                              eachProdItemRecord.image!,
+                            ),
+                            imageErrorBuilder:
+                                (context, error, stackTraceError) {
+                              return const Center(
+                                child: Icon(
+                                  Icons.broken_image_outlined,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          } else {
+            return const Center(
+              child: Text("Empty, No Data."),
+            );
+          }
+        });
+  }
 }
-}
+

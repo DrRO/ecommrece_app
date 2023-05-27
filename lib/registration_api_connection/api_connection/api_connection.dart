@@ -25,4 +25,5 @@ class API
   //Products
   static const hostProducts = "$hostConnect/products";
   static const trendingProducts = "$hostProducts/trending.php";
+  static const allProducts = "$hostProducts/allproducts.php";
 }
