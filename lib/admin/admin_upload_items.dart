@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:ecommrece_app/registration_api_connection/api_connection/api_connection.dart';
+
+import 'package:ecommrece_app/admin/admin_get_all_orders.dart';
+import 'package:ecommrece_app/api_connection/api_connection.dart';
+import 'package:ecommrece_app/users/authentication/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 class AdminUploadItemsScreen extends StatefulWidget {
   @override
@@ -26,10 +29,8 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
   var descriptionController = TextEditingController();
   var imageLink = "";
 
-
-  //defaultScreen methods
-  captureImageWithPhoneCamera() async
-  {
+  ///defaultScreen methods
+  captureImageWithPhoneCamera() async {
     pickedImageXFile = await _picker.pickImage(source: ImageSource.camera);
 
     Get.back();
@@ -113,10 +114,31 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
           ),
         ),
         automaticallyImplyLeading: false,
-        title: const Text(
-            "Welcome Admin"
+        title: GestureDetector(
+          onTap: () {
+            Get.to(AdminGetAllOrdersScreen());
+          },
+          child: const Text(
+            "New Orders",
+            style: TextStyle(
+              color: Colors.green,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
-        centerTitle: true,
+        centerTitle: false,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Get.to(LoginScreen());
+            },
+            icon: const Icon(
+              Icons.logout,
+              color: Colors.redAccent,
+            ),
+          ),
+        ],
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -177,7 +199,7 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
 
     String imageName = DateTime.now().millisecondsSinceEpoch.toString();
     requestImgurApi.fields['title'] = imageName;
-    requestImgurApi.headers['Authorization'] = "Client-ID " + "6ca0d6456311e4d";
+    requestImgurApi.headers['Authorization'] = "Client-ID " + "f1adc9ad9687e20";
 
     var imageFile = await http.MultipartFile.fromPath(
       'image',
@@ -190,6 +212,10 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
 
     var responseDataFromImgurApi = await responseFromImgurApi.stream.toBytes();
     var resultFromImgurApi = String.fromCharCodes(responseDataFromImgurApi);
+
+    print("imageName: " + imageName);
+
+    print("Result: " + resultFromImgurApi);
 
     Map<String, dynamic> jsonRes = json.decode(resultFromImgurApi);
     imageLink = (jsonRes["data"]["link"]).toString();
@@ -205,7 +231,7 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
 
     try {
       var response = await http.post(
-        Uri.parse(API.saveItem),
+        Uri.parse(API.uploadNewItem),
         body: {
           'item_id': '1',
           'name': nameController.text.trim().toString(),
@@ -244,7 +270,7 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
         Fluttertoast.showToast(msg: "Status is not 200");
       }
     } catch (errorMsg) {
-      print("Error:: " + errorMsg.toString());
+      print("Error Msg: " + errorMsg.toString());
     }
   }
 
@@ -265,9 +291,7 @@ class _AdminUploadItemsScreenState extends State<AdminUploadItemsScreen> {
           ),
         ),
         automaticallyImplyLeading: false,
-        title: const Text(
-            "Upload Form"
-        ),
+        title: const Text("Upload Form"),
         centerTitle: true,
         leading: IconButton(
           onPressed: () {

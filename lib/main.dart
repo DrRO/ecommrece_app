@@ -1,30 +1,29 @@
-import 'package:ecommrece_app/registration_api_connection/users/fragments/dashboard_fragments.dart';
-import 'package:ecommrece_app/registration_api_connection/users/user_preferences/user_pref.dart';
+import 'package:ecommrece_app/users/authentication/login_screen.dart';
+import 'package:ecommrece_app/users/fragments/dashboard_of_fragments.dart';
+import 'package:ecommrece_app/users/userPreferences/user_preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
-
-import 'registration_api_connection/users/authentication/login_screen.dart';
+import 'package:get/get.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized(); // to avoid empty white screen
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Clothes App',
-      debugShowCheckedModeBanner: false,  // to remove debuge sign
+      title: 'Products App',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-
-        primarySwatch: Colors.purple,
+        primarySwatch: Colors.deepPurple,
       ),
       home: FutureBuilder(
-        future: SaveUserInfo.readUser(),
+        future: RememberUserPrefs.readUserInfo(),
         builder: (context, dataSnapShot) {
           if (dataSnapShot.data == null) {
             return LoginScreen();
@@ -36,6 +35,5 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 
 
